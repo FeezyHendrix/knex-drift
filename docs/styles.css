@@ -1,0 +1,1361 @@
+/* ==========================================================================
+   knex-drift documentation — stylesheet
+   Contract: docs/DESIGN.md. Every value below is a token defined in §1–§3.
+   No remote fonts, no CDN, no build step. System stacks only.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. TOKENS — light (default)
+   -------------------------------------------------------------------------- */
+
+:root {
+  color-scheme: light;
+
+  /* shell */
+  --bg: #fbfbfa;
+  --bg-subtle: #f4f4f2;
+  --surface: #ffffff;
+  --surface-code: #f6f6f3;
+  --border: #e3e3de;
+  --border-strong: #cfcfc7;
+
+  /* text */
+  --text: #16181d;
+  --text-muted: #5a5f6a;
+  --text-faint: #646972;
+
+  /* accent — one only */
+  --accent: #0e7c72;
+  --accent-strong: #0a5d55;
+  --accent-soft: #eef7f6;
+  --accent-contrast: #ffffff;
+
+  /* severity */
+  --sev-blocking-fg: #b32323;
+  --sev-blocking-bg: #fdeceb;
+  --sev-blocking-bd: #f4cfcc;
+  --sev-warning-fg: #8a5a00;
+  --sev-warning-bg: #fdf1dc;
+  --sev-warning-bd: #efdcb4;
+  --sev-note-fg: #3d5a80;
+  --sev-note-bg: #eaeff5;
+  --sev-note-bd: #d3dde9;
+
+  /* syntax */
+  --t-com: #6a707e;
+  --t-str: #1a6b4f;
+  --t-key: #8a4b1f;
+  --t-kw: #7a3fa8;
+  --t-fn: #1b5fa8;
+  --t-flag: #0e7c72;
+  --t-op: #a03a3a;
+
+  /* terminal chrome */
+  --term-bg: #f6f6f3;
+  --term-bar: #ecece7;
+
+  /* type */
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display",
+    "Segoe UI", Cantarell, Ubuntu, "Noto Sans", sans-serif;
+
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.8125rem;
+  --fs-md: 0.9375rem;
+  --fs-base: 1.0625rem;
+  --fs-lg: 1.1875rem;
+  --fs-xl: 1.375rem;
+  --fs-2xl: clamp(1.5rem, 1.15rem + 1.4vw, 2rem);
+  --fs-3xl: clamp(2.4rem, 1.55rem + 3.6vw, 3.75rem);
+
+  --lh-tight: 1.15;
+  --lh-snug: 1.45;
+  --lh-prose: 1.7;
+  --measure: 70ch;
+
+  /* space — 4px base */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-5: 1.5rem;
+  --s-6: 2rem;
+  --s-7: 3rem;
+  --s-8: 4rem;
+  --s-9: 6rem;
+
+  /* radius */
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 10px;
+  --r-full: 999px;
+
+  /* elevation */
+  --shadow-1: 0 1px 2px rgba(16, 18, 22, 0.04), 0 4px 12px rgba(16, 18, 22, 0.04);
+  --shadow-2: 0 12px 32px rgba(16, 18, 22, 0.12);
+
+  /* motion */
+  --dur-1: 120ms;
+  --dur-2: 200ms;
+  --ease: cubic-bezier(0.2, 0.6, 0.3, 1);
+
+  /* layout */
+  --topbar-h: 56px;
+  --sidebar-w: 244px;
+  --shell-w: 1180px;
+  --main-w: 820px;
+}
+
+/* --------------------------------------------------------------------------
+   2. TOKENS — dark
+   The two blocks below are intentional duplicates: one for the explicit
+   toggle, one for the system preference. KEEP IN SYNC.
+   (`light-dark()` would dedupe this but fails open to unreadable colour on
+   unsupported engines — unacceptable for an offline file:// page.)
+   -------------------------------------------------------------------------- */
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #0c0e11;
+  --bg-subtle: #121519;
+  --surface: #14171c;
+  --surface-code: #0f1216;
+  --border: #22262d;
+  --border-strong: #333942;
+
+  --text: #e6e8ec;
+  --text-muted: #9aa1ad;
+  --text-faint: #838b98;
+
+  --accent: #3ed3bc;
+  --accent-strong: #7ce6d4;
+  --accent-soft: #10221f;
+  --accent-contrast: #05201c;
+
+  --sev-blocking-fg: #f4776b;
+  --sev-blocking-bg: #2b1614;
+  --sev-blocking-bd: #4a2320;
+  --sev-warning-fg: #e8b04b;
+  --sev-warning-bg: #2b2110;
+  --sev-warning-bd: #4a3a1b;
+  --sev-note-fg: #8fb4dc;
+  --sev-note-bg: #151d27;
+  --sev-note-bd: #26364a;
+
+  --t-com: #7b8290;
+  --t-str: #7fd6a6;
+  --t-key: #e0a06a;
+  --t-kw: #c39bea;
+  --t-fn: #7db4ee;
+  --t-flag: #3ed3bc;
+  --t-op: #e79a92;
+
+  --term-bg: #0f1216;
+  --term-bar: #171b21;
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-2: 0 12px 32px rgba(0, 0, 0, 0.55);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --bg: #0c0e11;
+    --bg-subtle: #121519;
+    --surface: #14171c;
+    --surface-code: #0f1216;
+    --border: #22262d;
+    --border-strong: #333942;
+
+    --text: #e6e8ec;
+    --text-muted: #9aa1ad;
+    --text-faint: #838b98;
+
+    --accent: #3ed3bc;
+    --accent-strong: #7ce6d4;
+    --accent-soft: #10221f;
+    --accent-contrast: #05201c;
+
+    --sev-blocking-fg: #f4776b;
+    --sev-blocking-bg: #2b1614;
+    --sev-blocking-bd: #4a2320;
+    --sev-warning-fg: #e8b04b;
+    --sev-warning-bg: #2b2110;
+    --sev-warning-bd: #4a3a1b;
+    --sev-note-fg: #8fb4dc;
+    --sev-note-bg: #151d27;
+    --sev-note-bd: #26364a;
+
+    --t-com: #7b8290;
+    --t-str: #7fd6a6;
+    --t-key: #e0a06a;
+    --t-kw: #c39bea;
+    --t-fn: #7db4ee;
+    --t-flag: #3ed3bc;
+    --t-op: #e79a92;
+
+    --term-bg: #0f1216;
+    --term-bar: #171b21;
+
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
+    --shadow-2: 0 12px 32px rgba(0, 0, 0, 0.55);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   3. RESET
+   -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  /* Single source of anchor offset. Sections must NOT also set
+     scroll-margin-top, or the two would stack and overshoot. */
+  scroll-padding-top: calc(var(--topbar-h) + var(--s-5));
+  /* Safety net only — no element is expected to exceed the viewport. Must stay
+     `clip`: `hidden` would create a scroll container and break the sticky
+     topbar and sidebar. */
+  overflow-x: clip;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--fs-base);
+  line-height: var(--lh-prose);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+figure,
+blockquote {
+  margin: 0;
+}
+
+ul,
+ol {
+  padding-left: var(--s-5);
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+/* A ligature-capable mono font would draw `--`, `&&`, `!==` and `>=` as single
+   glyphs that no longer match the text the copy button puts on the clipboard. */
+code,
+pre,
+h1,
+.brand,
+.chip,
+.spec-line,
+.code__head {
+  font-variant-ligatures: none;
+  font-feature-settings: "liga" 0, "calt" 0;
+}
+
+a {
+  color: var(--accent);
+  text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--accent-strong);
+  text-decoration-color: currentColor;
+}
+
+/* Focus — never removed, identical everywhere. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+/* --------------------------------------------------------------------------
+   4. UTILITIES
+   -------------------------------------------------------------------------- */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: var(--s-2);
+  left: var(--s-2);
+  z-index: 100;
+  padding: var(--s-2) var(--s-4);
+  background-color: var(--accent);
+  color: var(--accent-contrast);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  border-radius: var(--r-md);
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+  color: var(--accent-contrast);
+  outline-color: var(--text);
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  line-height: var(--lh-snug);
+}
+
+/* --------------------------------------------------------------------------
+   5. PRIMITIVE — button
+   -------------------------------------------------------------------------- */
+
+.btn {
+  --btn-bg: transparent;
+  --btn-fg: var(--text);
+  --btn-bd: var(--border-strong);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: 40px;
+  padding: 0 var(--s-4);
+  background-color: var(--btn-bg);
+  color: var(--btn-fg);
+  border: 1px solid var(--btn-bd);
+  border-radius: var(--r-md);
+  font-family: var(--font-mono);
+  font-size: var(--fs-md);
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
+.btn--primary {
+  --btn-bg: var(--accent);
+  --btn-fg: var(--accent-contrast);
+  --btn-bd: var(--accent);
+}
+
+.btn--primary:hover {
+  --btn-bg: var(--accent-strong);
+  --btn-bd: var(--accent-strong);
+  color: var(--accent-contrast);
+}
+
+.btn--ghost:hover {
+  --btn-bd: var(--text-muted);
+  --btn-bg: var(--bg-subtle);
+  color: var(--text);
+}
+
+.icon-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  background-color: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background-color: var(--bg-subtle);
+}
+
+.icon-btn svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* Icon swapping is driven by state attributes only — never by JS innerHTML,
+   so the markup stays inspectable and the a11y name is set explicitly. */
+.theme-btn .icon-sun {
+  display: none;
+}
+
+.theme-btn[data-theme="dark"] .icon-sun {
+  display: block;
+}
+
+.theme-btn[data-theme="dark"] .icon-moon {
+  display: none;
+}
+
+.nav-toggle .icon-close {
+  display: none;
+}
+
+.nav-toggle[aria-expanded="true"] .icon-menu {
+  display: none;
+}
+
+.nav-toggle[aria-expanded="true"] .icon-close {
+  display: block;
+}
+
+/* --------------------------------------------------------------------------
+   6. PRIMITIVE — badge / chip
+   -------------------------------------------------------------------------- */
+
+.badge {
+  display: inline-block;
+  padding: 0.15em 0.6em;
+  border: 1px solid transparent;
+  border-radius: var(--r-full);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.badge--blocking {
+  color: var(--sev-blocking-fg);
+  background-color: var(--sev-blocking-bg);
+  border-color: var(--sev-blocking-bd);
+}
+
+.badge--warning {
+  color: var(--sev-warning-fg);
+  background-color: var(--sev-warning-bg);
+  border-color: var(--sev-warning-bd);
+}
+
+.badge--note {
+  color: var(--sev-note-fg);
+  background-color: var(--sev-note-bg);
+  border-color: var(--sev-note-bd);
+}
+
+.chip {
+  display: inline-block;
+  padding: 0.1em 0.45em;
+  background-color: var(--surface-code);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  white-space: nowrap;
+}
+
+/* inline code inside prose */
+:not(pre) > code {
+  padding: 0.12em 0.4em;
+  background-color: var(--surface-code);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  overflow-wrap: anywhere;
+}
+
+/* --------------------------------------------------------------------------
+   7. TOPBAR
+   -------------------------------------------------------------------------- */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  height: var(--topbar-h);
+  background-color: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: saturate(1.4) blur(10px);
+  -webkit-backdrop-filter: saturate(1.4) blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  height: 100%;
+  max-width: var(--shell-w);
+  margin-inline: auto;
+  padding-inline: var(--s-5);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.brand__mark {
+  width: 18px;
+  height: 18px;
+  color: var(--accent);
+}
+
+.brand__ver {
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  color: var(--text-faint);
+  padding: 0.1em 0.4em;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+}
+
+.topbar__spacer {
+  flex: 1 1 auto;
+}
+
+.topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+}
+
+.nav-toggle {
+  display: none;
+}
+
+/* --------------------------------------------------------------------------
+   8. SHELL / SIDEBAR
+   -------------------------------------------------------------------------- */
+
+.layout {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+  gap: var(--s-7);
+  max-width: var(--shell-w);
+  margin-inline: auto;
+  padding-inline: var(--s-5);
+}
+
+.sidebar {
+  position: sticky;
+  top: var(--topbar-h);
+  align-self: start;
+  height: calc(100dvh - var(--topbar-h));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--s-6) var(--s-2) var(--s-8) 0;
+}
+
+.sidebar__group + .sidebar__group {
+  margin-top: var(--s-5);
+}
+
+.sidebar__title {
+  padding-left: var(--s-3);
+  margin-bottom: var(--s-2);
+}
+
+.sidebar__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-left: 1px solid var(--border);
+}
+
+.sidebar__link {
+  display: block;
+  padding: var(--s-2) var(--s-3);
+  margin-left: -1px;
+  border-left: 2px solid transparent;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.sidebar__link:hover {
+  color: var(--text);
+  border-left-color: var(--border-strong);
+}
+
+.sidebar__link[aria-current="true"] {
+  color: var(--accent);
+  border-left-color: var(--accent);
+  background-color: var(--accent-soft);
+}
+
+/* --------------------------------------------------------------------------
+   9. MAIN
+   -------------------------------------------------------------------------- */
+
+.main {
+  max-width: var(--main-w);
+  padding-block: var(--s-6) var(--s-9);
+  min-width: 0;
+}
+
+.section + .section {
+  margin-top: var(--s-9);
+}
+
+.hero + .section {
+  margin-top: var(--s-8);
+}
+
+.section > * + * {
+  margin-top: var(--s-4);
+}
+
+.section > * + h3 {
+  margin-top: var(--s-7);
+}
+
+.section > * + figure,
+.section > * + .table-wrap,
+.section > * + .callout,
+.section > * + .cards {
+  margin-top: var(--s-5);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: var(--lh-tight);
+  color: var(--text);
+}
+
+h2 {
+  font-size: var(--fs-2xl);
+  padding-bottom: var(--s-3);
+  border-bottom: 1px solid var(--border);
+}
+
+h3 {
+  font-size: var(--fs-xl);
+}
+
+.section p,
+.section li {
+  max-width: var(--measure);
+  color: var(--text-muted);
+}
+
+.section li + li {
+  margin-top: var(--s-2);
+}
+
+.section strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.lead {
+  font-size: var(--fs-lg);
+  color: var(--text) !important;
+}
+
+/* anchor affordance on headings */
+.anchor {
+  margin-left: var(--s-2);
+  font-size: 0.7em;
+  color: var(--text-faint);
+  text-decoration: none;
+  opacity: 0;
+}
+
+h2:hover .anchor,
+h3:hover .anchor,
+.anchor:focus-visible {
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------------------
+   10. HERO
+   -------------------------------------------------------------------------- */
+
+.hero {
+  position: relative;
+  padding-block: var(--s-7) var(--s-8);
+}
+
+/* Atmosphere: engineering graph paper, ~4% ink, faded out. CSS only. */
+.hero::before {
+  content: "";
+  position: absolute;
+  /* Bleeds by the container gutter only. At this width the hero sits inside
+     the sidebar-offset main column, so a viewport-relative bleed would be
+     asymmetric and push the document box wider than the screen. The narrow
+     branch below, where the column really is centred, does bleed to the edge. */
+  inset: calc(var(--s-6) * -1) calc(var(--s-5) * -1) var(--s-6) calc(var(--s-5) * -1);
+  z-index: -1;
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    color-mix(in srgb, var(--text) 22%, transparent) 1px,
+    transparent 0
+  );
+  background-size: 22px 22px;
+  opacity: 0.18;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 82%);
+  mask-image: linear-gradient(to bottom, #000 0%, transparent 82%);
+  pointer-events: none;
+}
+
+.hero__title {
+  margin-top: var(--s-3);
+  font-size: var(--fs-3xl);
+  letter-spacing: -0.045em;
+}
+
+.hero__tagline {
+  max-width: 22ch;
+  margin-top: var(--s-4);
+  font-family: var(--font-sans);
+  font-size: clamp(1.25rem, 1rem + 1.1vw, 1.75rem);
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  color: var(--text);
+}
+
+.hero__blurb {
+  max-width: 58ch;
+  margin-top: var(--s-4);
+  color: var(--text-muted);
+}
+
+.hero__install {
+  margin-top: var(--s-7);
+  max-width: 460px;
+}
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-3);
+  margin-top: var(--s-5);
+}
+
+.spec-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-3);
+  margin-top: var(--s-6);
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-faint);
+}
+
+.spec-line span + span::before {
+  content: "·";
+  margin-right: var(--s-3);
+  color: var(--border-strong);
+}
+
+/* --------------------------------------------------------------------------
+   11. CODE BLOCKS
+   -------------------------------------------------------------------------- */
+
+figure.code {
+  margin: 0;
+  background-color: var(--surface-code);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+.code__head {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-2) var(--s-2) var(--s-2) var(--s-4);
+  min-height: 38px;
+  background-color: var(--bg-subtle);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.code__label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  flex: none;
+  height: 26px;
+  padding-inline: var(--s-2);
+  background-color: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.copy-btn:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+  background-color: var(--surface);
+}
+
+.copy-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.copy-btn[data-copied="true"] {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.copy-btn .icon-check {
+  display: none;
+}
+
+.copy-btn[data-copied="true"] .icon-copy {
+  display: none;
+}
+
+.copy-btn[data-copied="true"] .icon-check {
+  display: block;
+}
+
+figure.code pre {
+  margin: 0;
+  padding: var(--s-4);
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  line-height: 1.75;
+  tab-size: 2;
+}
+
+figure.code code {
+  font-family: inherit;
+  color: var(--text);
+}
+
+/* a code block with no head bar (rare) keeps its radius */
+figure.code > pre:first-child {
+  padding-top: var(--s-4);
+}
+
+/* syntax tokens — hand authored, no highlighter library */
+.t-com {
+  color: var(--t-com);
+  font-style: italic;
+}
+.t-str {
+  color: var(--t-str);
+}
+.t-key {
+  color: var(--t-key);
+}
+.t-kw {
+  color: var(--t-kw);
+}
+.t-fn {
+  color: var(--t-fn);
+}
+.t-flag {
+  color: var(--t-flag);
+}
+.t-op {
+  color: var(--t-op);
+}
+.t-punc {
+  color: var(--text-muted);
+}
+
+/* --------------------------------------------------------------------------
+   12. TERMINAL
+   -------------------------------------------------------------------------- */
+
+.terminal {
+  background-color: var(--term-bg);
+}
+
+.terminal .code__head {
+  background-color: var(--term-bar);
+}
+
+.terminal__dots {
+  display: inline-flex;
+  gap: 6px;
+  flex: none;
+}
+
+.terminal__dots i {
+  width: 9px;
+  height: 9px;
+  border-radius: var(--r-full);
+  background-color: var(--border-strong);
+}
+
+.term-fail {
+  color: var(--sev-blocking-fg);
+  font-weight: 700;
+}
+
+.term-code {
+  color: var(--sev-blocking-fg);
+}
+
+.term-file {
+  color: var(--text);
+}
+
+.term-hash {
+  color: var(--t-str);
+}
+
+.term-dim {
+  color: var(--text-faint);
+}
+
+.term-sum {
+  color: var(--text-muted);
+}
+
+/* schema block — plain monospace, no highlighting */
+.schema__name {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.schema__type {
+  color: var(--t-kw);
+}
+
+.schema__note {
+  color: var(--text-faint);
+}
+
+/* --------------------------------------------------------------------------
+   13. TABLES
+   -------------------------------------------------------------------------- */
+
+.table-wrap {
+  overflow-x: auto; /* safety net — tables are designed to fit 375px */
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background-color: var(--surface);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-snug);
+}
+
+caption {
+  padding: var(--s-3) var(--s-4);
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  border-bottom: 1px solid var(--border);
+  background-color: var(--bg-subtle);
+}
+
+th,
+td {
+  padding: var(--s-3) var(--s-4);
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+
+thead th {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  background-color: var(--bg-subtle);
+  white-space: nowrap;
+}
+
+tbody tr:last-child th,
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+tbody td {
+  color: var(--text-muted);
+}
+
+tbody th {
+  font-weight: 400;
+  color: var(--text);
+}
+
+.col-code {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.col-sev {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.col-opt code {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+/* --------------------------------------------------------------------------
+   14. CALLOUT + CARDS
+   -------------------------------------------------------------------------- */
+
+.callout {
+  padding: var(--s-4) var(--s-5);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--sev-warning-fg);
+  border-radius: var(--r-md);
+}
+
+.callout__label {
+  display: block;
+  margin-bottom: var(--s-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sev-warning-fg);
+}
+
+.callout p {
+  max-width: var(--measure);
+  color: var(--text-muted);
+  font-size: var(--fs-md);
+}
+
+.cards {
+  display: grid;
+  gap: var(--s-4);
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.card {
+  padding: var(--s-4) var(--s-5);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-1);
+}
+
+.card h3 {
+  font-size: var(--fs-md);
+  letter-spacing: 0;
+}
+
+.card p {
+  margin-top: var(--s-2);
+  font-size: var(--fs-md);
+  color: var(--text-muted);
+}
+
+/* the four blind spots list in "The problem" */
+.blindspots {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--s-3);
+}
+
+.blindspots li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--s-3);
+  align-items: baseline;
+  max-width: var(--measure);
+  padding: var(--s-3) var(--s-4);
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: var(--fs-md);
+}
+
+.blindspots li + li {
+  margin-top: 0;
+}
+
+.blindspots .chip {
+  font-size: var(--fs-xs);
+}
+
+/* roadmap list */
+.roadmap {
+  list-style: none;
+  padding: 0;
+}
+
+.roadmap li {
+  position: relative;
+  padding-left: var(--s-6);
+  max-width: var(--measure);
+}
+
+.roadmap li + li {
+  margin-top: var(--s-3);
+}
+
+.roadmap li::before {
+  content: "○";
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  line-height: calc(var(--fs-base) * var(--lh-prose));
+  color: var(--text-faint);
+}
+
+/* --------------------------------------------------------------------------
+   15. FOOTER
+   -------------------------------------------------------------------------- */
+
+.footer {
+  border-top: 1px solid var(--border);
+  background-color: var(--bg-subtle);
+}
+
+.footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-3) var(--s-5);
+  max-width: var(--shell-w);
+  margin-inline: auto;
+  padding: var(--s-6) var(--s-5);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  color: var(--text-faint);
+}
+
+.footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-5);
+  margin-left: auto;
+}
+
+.footer a {
+  text-decoration: none;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------------
+   16. RESPONSIVE — < 960px : sidebar becomes a disclosure panel
+   The nav node is never duplicated; hidden links are display:none so they
+   are removed from the tab order.
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 959px) {
+  .nav-toggle {
+    display: inline-grid;
+  }
+
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .sidebar {
+    display: none;
+    position: fixed;
+    top: var(--topbar-h);
+    left: 0;
+    right: 0;
+    z-index: 39;
+    height: auto;
+    max-height: calc(100dvh - var(--topbar-h));
+    padding: var(--s-4) var(--s-5) var(--s-6);
+    background-color: var(--bg);
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow-2);
+  }
+
+  .sidebar[data-open="true"] {
+    display: block;
+  }
+
+  .main {
+    max-width: none;
+  }
+
+  .hero::before {
+    inset: calc(var(--s-5) * -1) calc(50% - 50vw) var(--s-6) calc(50% - 50vw);
+  }
+}
+
+@media (max-width: 560px) {
+  :root {
+    --s-9: 4rem;
+    --s-7: 2.25rem;
+  }
+
+  .topbar__inner,
+  .layout,
+  .footer__inner {
+    padding-inline: var(--s-4);
+  }
+
+  .brand__ver {
+    display: none;
+  }
+
+  th,
+  td {
+    padding: var(--s-3);
+  }
+
+  figure.code pre {
+    padding: var(--s-3);
+    font-size: var(--fs-xs);
+  }
+
+  .code__head {
+    padding-left: var(--s-3);
+  }
+
+  .hero__actions .btn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  .footer__links {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   17. MOTION — opt-in only. GPU-composited properties only.
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  .btn,
+  .icon-btn,
+  .copy-btn,
+  .sidebar__link,
+  .skip-link,
+  .anchor,
+  a {
+    transition:
+      color var(--dur-1) var(--ease),
+      background-color var(--dur-1) var(--ease),
+      border-color var(--dur-1) var(--ease),
+      opacity var(--dur-1) var(--ease),
+      transform var(--dur-1) var(--ease);
+  }
+
+  .btn:active,
+  .icon-btn:active,
+  .copy-btn:active {
+    transform: translateY(1px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   18. PRINT
+   -------------------------------------------------------------------------- */
+
+@media print {
+  .topbar,
+  .sidebar,
+  .copy-btn,
+  .skip-link {
+    display: none !important;
+  }
+
+  .layout {
+    display: block;
+    padding: 0;
+  }
+
+  .main {
+    max-width: none;
+  }
+}

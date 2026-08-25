@@ -1,0 +1,943 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>knex-drift — catch the migration problems that knex cannot see</title>
+    <meta
+      name="description"
+      content="knex-drift is a standalone CLI that checksums your knex migration files against the knex_migrations ledger, so edited, out-of-order and duplicated migrations stop a deploy instead of silently drifting production."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2024%2024'%20fill='none'%20stroke='%230e7c72'%20stroke-width='2.6'%20stroke-linecap='round'%3E%3Cpath%20d='M3%206h11M10%2012h11M3%2018h11'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script>
+      /* Applied before first paint so an explicitly chosen theme never flashes.
+         With nothing stored, no attribute is set and prefers-color-scheme wins. */
+      (function () {
+        try {
+          var stored = window.localStorage.getItem("knex-drift-theme");
+          if (stored === "light" || stored === "dark") {
+            document.documentElement.setAttribute("data-theme", stored);
+          }
+        } catch (err) {
+          /* storage blocked (file://, private mode) — system theme applies */
+        }
+      })();
+    </script>
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+
+    <header class="topbar">
+      <div class="topbar__inner">
+        <a class="brand" href="#overview">
+          <svg
+            class="brand__mark"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.6"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M3 6h11M10 12h11M3 18h11" />
+          </svg>
+          knex-drift
+          <span class="brand__ver">v0.1.0</span>
+        </a>
+
+        <span class="topbar__spacer"></span>
+
+        <div class="topbar__actions">
+          <a
+            class="icon-btn"
+            href="https://github.com/FeezyHendrix/knex-drift"
+            aria-label="knex-drift on GitHub"
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path
+                d="M12 .5a12 12 0 0 0-3.79 23.4c.6.1.82-.26.82-.58v-2.2c-3.34.72-4.04-1.6-4.04-1.6-.55-1.4-1.34-1.77-1.34-1.77-1.1-.75.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.84 2.8 1.3 3.49 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.34-5.47-5.96 0-1.32.47-2.39 1.24-3.23-.13-.3-.54-1.53.12-3.18 0 0 1-.32 3.3 1.23a11.4 11.4 0 0 1 6.01 0c2.3-1.55 3.3-1.23 3.3-1.23.66 1.65.25 2.88.12 3.18.77.84 1.23 1.91 1.23 3.23 0 4.63-2.8 5.65-5.48 5.95.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.83.57A12 12 0 0 0 12 .5Z"
+              />
+            </svg>
+          </a>
+
+          <button
+            class="icon-btn theme-btn"
+            id="theme-toggle"
+            type="button"
+            aria-label="Switch to dark theme"
+          >
+            <svg
+              class="icon-moon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.9"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M20.4 14.9A8.5 8.5 0 0 1 9.1 3.6a8.5 8.5 0 1 0 11.3 11.3Z" />
+            </svg>
+            <svg
+              class="icon-sun"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.9"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="4" />
+              <path
+                d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"
+              />
+            </svg>
+          </button>
+
+          <button
+            class="icon-btn nav-toggle"
+            id="nav-toggle"
+            type="button"
+            aria-label="Open section menu"
+            aria-expanded="false"
+            aria-controls="site-nav"
+          >
+            <svg
+              class="icon-menu"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <path d="M4 7h16M4 12h16M4 17h16" />
+            </svg>
+            <svg
+              class="icon-close"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="layout">
+      <nav class="sidebar" id="site-nav" aria-label="Documentation sections">
+        <div class="sidebar__group">
+          <p class="eyebrow sidebar__title">Start</p>
+          <ul class="sidebar__list">
+            <li><a class="sidebar__link" href="#overview">Overview</a></li>
+            <li><a class="sidebar__link" href="#problem">The problem</a></li>
+            <li><a class="sidebar__link" href="#install">Install</a></li>
+            <li><a class="sidebar__link" href="#quick-start">Quick start</a></li>
+          </ul>
+        </div>
+
+        <div class="sidebar__group">
+          <p class="eyebrow sidebar__title">Reference</p>
+          <ul class="sidebar__list">
+            <li><a class="sidebar__link" href="#detects">What it detects</a></li>
+            <li><a class="sidebar__link" href="#commands">Commands</a></li>
+            <li><a class="sidebar__link" href="#exit-codes">Exit codes</a></li>
+            <li><a class="sidebar__link" href="#configuration">Configuration</a></li>
+            <li><a class="sidebar__link" href="#sidecar">The sidecar table</a></li>
+          </ul>
+        </div>
+
+        <div class="sidebar__group">
+          <p class="eyebrow sidebar__title">Beyond the CLI</p>
+          <ul class="sidebar__list">
+            <li><a class="sidebar__link" href="#programmatic">Programmatic use</a></li>
+            <li><a class="sidebar__link" href="#database-support">Database support</a></li>
+            <li><a class="sidebar__link" href="#roadmap">Not implemented yet</a></li>
+          </ul>
+        </div>
+      </nav>
+
+      <main class="main" id="main">
+        <!-- ============================ HERO ============================ -->
+        <section class="hero" id="overview">
+          <p class="eyebrow">Migration drift detection for knex</p>
+
+          <h1 class="hero__title">knex-drift</h1>
+
+          <p class="hero__tagline">Catch the migration problems that knex cannot see.</p>
+
+          <p class="hero__blurb">
+            A standalone CLI that checksums every migration file against the
+            <code>knex_migrations</code> ledger. It never runs DDL, and it never modifies that
+            ledger.
+          </p>
+
+          <figure class="code hero__install" data-copy-label="the install command">
+            <figcaption class="code__head"><span class="code__label">shell</span></figcaption>
+            <pre><code><span class="t-fn">npm</span> install <span class="t-flag">--save-dev</span> knex-drift</code></pre>
+          </figure>
+
+          <div class="hero__actions">
+            <a class="btn btn--primary" href="#quick-start">
+              Quick start
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+            </a>
+            <a class="btn btn--ghost" href="https://github.com/FeezyHendrix/knex-drift">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path
+                  d="M12 .5a12 12 0 0 0-3.79 23.4c.6.1.82-.26.82-.58v-2.2c-3.34.72-4.04-1.6-4.04-1.6-.55-1.4-1.34-1.77-1.34-1.77-1.1-.75.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.84 2.8 1.3 3.49 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.34-5.47-5.96 0-1.32.47-2.39 1.24-3.23-.13-.3-.54-1.53.12-3.18 0 0 1-.32 3.3 1.23a11.4 11.4 0 0 1 6.01 0c2.3-1.55 3.3-1.23 3.3-1.23.66 1.65.25 2.88.12 3.18.77.84 1.23 1.91 1.23 3.23 0 4.63-2.8 5.65-5.48 5.95.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.83.57A12 12 0 0 0 12 .5Z"
+                />
+              </svg>
+              GitHub
+            </a>
+          </div>
+
+          <p class="spec-line">
+            <span>node &gt;= 22</span>
+            <span>knex &gt;= 2 (peer)</span>
+            <span>zero config</span>
+            <span>reads only</span>
+            <span>MIT</span>
+          </p>
+        </section>
+
+        <!-- ========================== THE PROBLEM ======================== -->
+        <section class="section" id="problem">
+          <h2>The problem<a class="anchor" href="#problem" aria-label="Link to The problem">#</a></h2>
+
+          <p class="lead">
+            knex records only the <strong>name</strong> of every migration it runs. It never
+            records what the file contained, and it never looks at the database.
+          </p>
+
+          <p>
+            So knex stays silent in all four of these cases. Every one of them makes a rebuilt
+            database differ from production, and you find out much later.
+          </p>
+
+          <ul class="blindspots">
+            <li>
+              <span class="chip">D3</span>
+              <span>A migration file is <strong>edited after it was applied</strong>.</span>
+            </li>
+            <li>
+              <span class="chip">D4</span>
+              <span>A new file is <strong>inserted out of order</strong>.</span>
+            </li>
+            <li>
+              <span class="chip">D5</span>
+              <span>A ledger row is <strong>duplicated</strong>.</span>
+            </li>
+            <li>
+              <span class="chip">D7</span>
+              <span>
+                Someone points a <strong>fresh ledger</strong> at a database that already has
+                tables.
+              </span>
+            </li>
+          </ul>
+
+          <p>
+            <code>knex-drift</code> closes that gap. It is a standalone CLI, because the knex CLI
+            has no plugin hook. It never runs DDL, and it never modifies
+            <code>knex_migrations</code>.
+          </p>
+        </section>
+
+        <!-- ============================ INSTALL ========================== -->
+        <section class="section" id="install">
+          <h2>Install<a class="anchor" href="#install" aria-label="Link to Install">#</a></h2>
+
+          <figure class="code" data-copy-label="the install command">
+            <figcaption class="code__head"><span class="code__label">shell</span></figcaption>
+            <pre><code><span class="t-fn">npm</span> install <span class="t-flag">--save-dev</span> knex-drift</code></pre>
+          </figure>
+
+          <p>Requires Node 22 or newer, and knex 2 or newer as a peer dependency.</p>
+        </section>
+
+        <!-- ========================== QUICK START ======================== -->
+        <section class="section" id="quick-start">
+          <h2>
+            Quick start<a class="anchor" href="#quick-start" aria-label="Link to Quick start">#</a>
+          </h2>
+
+          <p>
+            Record the checksums of what is already applied once, then gate every deploy from then
+            on.
+          </p>
+
+          <figure class="code" data-copy-label="the quick start commands">
+            <figcaption class="code__head"><span class="code__label">shell</span></figcaption>
+            <pre><code><span class="t-com"># 1. store the checksum of every migration already applied</span>
+<span class="t-fn">npx</span> knex-drift record <span class="t-flag">--all</span>
+
+<span class="t-com"># 2. from now on, gate every deploy</span>
+<span class="t-fn">npx</span> knex-drift verify <span class="t-op">&amp;&amp;</span> <span class="t-fn">npx</span> knex migrate:latest <span class="t-op">&amp;&amp;</span> <span class="t-fn">npx</span> knex-drift record</code></pre>
+          </figure>
+
+          <p>Put that chain in <code>package.json</code> so a deploy is one command:</p>
+
+          <figure class="code" data-copy-label="the package.json script">
+            <figcaption class="code__head"><span class="code__label">package.json</span></figcaption>
+            <pre><code><span class="t-punc">{</span>
+  <span class="t-key">"scripts"</span><span class="t-punc">:</span> <span class="t-punc">{</span>
+    <span class="t-key">"db:migrate"</span><span class="t-punc">:</span> <span class="t-str">"knex-drift verify &amp;&amp; knex migrate:latest &amp;&amp; knex-drift record"</span>
+  <span class="t-punc">}</span>
+<span class="t-punc">}</span></code></pre>
+          </figure>
+
+          <p>
+            Because the steps are joined with <code>&amp;&amp;</code>, a failing check stops the
+            deploy <strong>before</strong> knex touches the database.
+          </p>
+        </section>
+
+        <!-- ========================= WHAT IT DETECTS ===================== -->
+        <section class="section" id="detects">
+          <h2>
+            What it detects<a class="anchor" href="#detects" aria-label="Link to What it detects"
+              >#</a
+            >
+          </h2>
+
+          <div class="table-wrap">
+            <table>
+              <caption>
+                Findings and severity
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col" class="col-code">Code</th>
+                  <th scope="col">Condition</th>
+                  <th scope="col" class="col-sev">Severity</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row" class="col-code"><code>D3</code></th>
+                  <td>A migration file changed after it was applied</td>
+                  <td class="col-sev"><span class="badge badge--blocking">blocking</span></td>
+                </tr>
+                <tr>
+                  <th scope="row" class="col-code"><code>D4</code></th>
+                  <td>A pending migration sorts before the newest applied one</td>
+                  <td class="col-sev"><span class="badge badge--blocking">blocking</span></td>
+                </tr>
+                <tr>
+                  <th scope="row" class="col-code"><code>D5</code></th>
+                  <td>The same migration name appears in the ledger more than once</td>
+                  <td class="col-sev"><span class="badge badge--blocking">blocking</span></td>
+                </tr>
+                <tr>
+                  <th scope="row" class="col-code"><code>D7</code></th>
+                  <td>The ledger is empty but the database already holds user tables</td>
+                  <td class="col-sev"><span class="badge badge--blocking">blocking</span></td>
+                </tr>
+                <tr>
+                  <th scope="row" class="col-code"><code>D2</code></th>
+                  <td>A ledger row has no matching migration file</td>
+                  <td class="col-sev"><span class="badge badge--warning">warning</span></td>
+                </tr>
+                <tr>
+                  <th scope="row" class="col-code"><code>UNVERIFIED</code></th>
+                  <td>Applied migrations that have no recorded checksum yet</td>
+                  <td class="col-sev"><span class="badge badge--note">note</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p>Example output:</p>
+
+          <figure class="code terminal" data-copy-label="the example output">
+            <figcaption class="code__head">
+              <span class="terminal__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="code__label">knex-drift verify</span>
+            </figcaption>
+            <pre><code><span class="term-fail">FAIL</span>  <span class="term-code">D3</span>  a migration changed after it was applied
+
+  <span class="term-file">20240101120000_create_users.js</span>
+    <span class="term-dim">recorded</span>  <span class="term-hash">fd7084b7885a</span>  <span class="term-dim">(batch 1)</span>
+    <span class="term-dim">on disk</span>   <span class="term-hash">361b439e408d</span>
+
+  This database has the OLD behaviour; a rebuilt one gets the NEW behaviour.
+  Restore the file content, or write a NEW migration for the change.
+
+<span class="term-sum">1 blocking issue, 0 warnings, 0 notes</span></code></pre>
+          </figure>
+        </section>
+
+        <!-- =========================== COMMANDS ========================== -->
+        <section class="section" id="commands">
+          <h2>Commands<a class="anchor" href="#commands" aria-label="Link to Commands">#</a></h2>
+
+          <h3 id="verify"><code>knex-drift verify</code></h3>
+
+          <p>Compares the migration files with the ledger. Reads only — it writes nothing.</p>
+
+          <div class="table-wrap">
+            <table>
+              <caption>
+                verify options
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Option</th>
+                  <th scope="col">Effect</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row" class="col-opt"><code>--strict</code></th>
+                  <td>Treat warnings as blocking</td>
+                </tr>
+                <tr>
+                  <th scope="row" class="col-opt"><code>--json</code></th>
+                  <td>Print machine-readable output</td>
+                </tr>
+                <tr>
+                  <th scope="row" class="col-opt"><code>--pre</code></th>
+                  <td>
+                    Run only the checks that are safe before a migration (the default today)
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row" class="col-opt"><code>-c, --config &lt;path&gt;</code></th>
+                  <td>Path to <code>drift.config.js</code></td>
+                </tr>
+                <tr>
+                  <th scope="row" class="col-opt"><code>--cwd &lt;path&gt;</code></th>
+                  <td>Directory to resolve paths from</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 id="record"><code>knex-drift record</code></h3>
+
+          <p>Stores the checksum of applied migrations in the sidecar table.</p>
+
+          <div class="table-wrap">
+            <table>
+              <caption>
+                record options
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Option</th>
+                  <th scope="col">Effect</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row" class="col-opt"><code>--all</code></th>
+                  <td>Record every applied migration, not only the newest batch</td>
+                </tr>
+                <tr>
+                  <th scope="row" class="col-opt"><code>-c, --config &lt;path&gt;</code></th>
+                  <td>Path to <code>drift.config.js</code></td>
+                </tr>
+                <tr>
+                  <th scope="row" class="col-opt"><code>--cwd &lt;path&gt;</code></th>
+                  <td>Directory to resolve paths from</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p>
+            Without <code>--all</code>, only the newest batch is recorded. That is what a deploy
+            needs immediately after <code>knex migrate:latest</code>. Recording every migration at
+            once is the deliberate adoption step, so it is explicit.
+          </p>
+        </section>
+
+        <!-- ========================== EXIT CODES ========================= -->
+        <section class="section" id="exit-codes">
+          <h2>
+            Exit codes<a class="anchor" href="#exit-codes" aria-label="Link to Exit codes">#</a>
+          </h2>
+
+          <div class="table-wrap">
+            <table>
+              <caption>
+                Process exit codes
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col" class="col-code">Code</th>
+                  <th scope="col">Meaning</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row" class="col-code"><code>0</code></th>
+                  <td>Clean, or notes only</td>
+                </tr>
+                <tr>
+                  <th scope="row" class="col-code"><code>1</code></th>
+                  <td>At least one blocking finding</td>
+                </tr>
+                <tr>
+                  <th scope="row" class="col-code"><code>2</code></th>
+                  <td>Warnings only (becomes <code>1</code> under <code>--strict</code>)</td>
+                </tr>
+                <tr>
+                  <th scope="row" class="col-code"><code>3</code></th>
+                  <td>The tool could not run — bad config, no connection</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ========================= CONFIGURATION ======================= -->
+        <section class="section" id="configuration">
+          <h2>
+            Configuration<a class="anchor" href="#configuration" aria-label="Link to Configuration"
+              >#</a
+            >
+          </h2>
+
+          <p>
+            No configuration is required. By default the tool reads <code>./knexfile.js</code> and
+            uses knex's own defaults for the migrations directory, the ledger table name, and the
+            schema name.
+          </p>
+
+          <p>To change any of that, add <code>drift.config.js</code> next to your knexfile:</p>
+
+          <figure class="code" data-copy-label="the drift.config.js example">
+            <figcaption class="code__head"><span class="code__label">drift.config.js</span></figcaption>
+            <pre><code><span class="t-kw">module</span>.<span class="t-fn">exports</span> = <span class="t-punc">{</span>
+  <span class="t-com">// Path to the knexfile. Default: "./knexfile.js"</span>
+  <span class="t-key">knexfile</span><span class="t-punc">:</span> <span class="t-str">'./knexfile.js'</span><span class="t-punc">,</span>
+
+  <span class="t-com">// Which knexfile environment to use.</span>
+  <span class="t-com">// Default: process.env.NODE_ENV, else "development"</span>
+  <span class="t-key">environment</span><span class="t-punc">:</span> <span class="t-str">'production'</span><span class="t-punc">,</span>
+
+  <span class="t-com">// Where checksums are stored. Default: "knex_drift_migrations"</span>
+  <span class="t-key">sidecarTableName</span><span class="t-punc">:</span> <span class="t-str">'knex_drift_migrations'</span><span class="t-punc">,</span>
+
+  <span class="t-com">// Strip carriage returns before hashing, so a Windows checkout does not</span>
+  <span class="t-com">// report every file as changed. Default: true</span>
+  <span class="t-key">normalizeEol</span><span class="t-punc">:</span> <span class="t-kw">true</span><span class="t-punc">,</span>
+<span class="t-punc">}</span></code></pre>
+          </figure>
+        </section>
+
+        <!-- ======================== THE SIDECAR TABLE ==================== -->
+        <section class="section" id="sidecar">
+          <h2>
+            The sidecar table<a class="anchor" href="#sidecar" aria-label="Link to The sidecar table"
+              >#</a
+            >
+          </h2>
+
+          <p>On first <code>record</code>, the tool creates one table:</p>
+
+          <figure class="code" data-copy-label="the sidecar table schema">
+            <figcaption class="code__head"><span class="code__label">schema</span></figcaption>
+            <pre><code><span class="schema__name">knex_drift_migrations</span>
+  name         <span class="schema__type">varchar(255)</span>  <span class="schema__note">primary key</span>
+  checksum     <span class="schema__type">varchar(64)</span>
+  source       <span class="schema__type">varchar(16)</span>   <span class="schema__note">'record' or 'baseline'</span>
+  recorded_at  <span class="schema__type">timestamp</span></code></pre>
+          </figure>
+
+          <p>
+            <code>knex_migrations</code> is never altered. Uninstalling is
+            <code>DROP TABLE knex_drift_migrations</code>.
+          </p>
+        </section>
+
+        <!-- ======================== PROGRAMMATIC USE ===================== -->
+        <section class="section" id="programmatic">
+          <h2>
+            Programmatic use<a
+              class="anchor"
+              href="#programmatic"
+              aria-label="Link to Programmatic use"
+              >#</a
+            >
+          </h2>
+
+          <figure class="code" data-copy-label="the programmatic example">
+            <figcaption class="code__head"><span class="code__label">javascript</span></figcaption>
+            <pre><code><span class="t-kw">import</span> knexFactory <span class="t-kw">from</span> <span class="t-str">'knex'</span>
+<span class="t-kw">import</span> <span class="t-punc">{</span> loadConfig<span class="t-punc">,</span> verify<span class="t-punc">,</span> record<span class="t-punc">,</span> exitCodeFor<span class="t-punc">,</span> formatHuman <span class="t-punc">}</span> <span class="t-kw">from</span> <span class="t-str">'knex-drift'</span>
+
+<span class="t-kw">const</span> config = <span class="t-kw">await</span> <span class="t-fn">loadConfig</span><span class="t-punc">()</span>
+<span class="t-kw">const</span> knex = <span class="t-fn">knexFactory</span><span class="t-punc">(</span>config.knexConfig<span class="t-punc">)</span>
+
+<span class="t-kw">const</span> findings = <span class="t-kw">await</span> <span class="t-fn">verify</span><span class="t-punc">(</span>knex<span class="t-punc">,</span> config<span class="t-punc">)</span>
+<span class="t-kw">if</span> <span class="t-punc">(</span><span class="t-fn">exitCodeFor</span><span class="t-punc">(</span>findings<span class="t-punc">,</span> <span class="t-kw">false</span><span class="t-punc">)</span> <span class="t-op">!==</span> <span class="t-kw">0</span><span class="t-punc">)</span> <span class="t-punc">{</span>
+  console.<span class="t-fn">error</span><span class="t-punc">(</span><span class="t-fn">formatHuman</span><span class="t-punc">(</span>findings<span class="t-punc">,</span> <span class="t-kw">false</span><span class="t-punc">))</span>
+  process.<span class="t-fn">exit</span><span class="t-punc">(</span><span class="t-kw">1</span><span class="t-punc">)</span>
+<span class="t-punc">}</span>
+
+<span class="t-kw">await</span> knex.migrate.<span class="t-fn">latest</span><span class="t-punc">()</span>
+<span class="t-kw">await</span> <span class="t-fn">record</span><span class="t-punc">(</span>knex<span class="t-punc">,</span> config<span class="t-punc">,</span> <span class="t-punc">{</span> <span class="t-key">all</span><span class="t-punc">:</span> <span class="t-kw">false</span> <span class="t-punc">}</span><span class="t-punc">)</span>
+<span class="t-kw">await</span> knex.<span class="t-fn">destroy</span><span class="t-punc">()</span></code></pre>
+          </figure>
+
+          <div class="callout">
+            <strong class="callout__label">Do not use knex lifecycle hooks</strong>
+            <p>
+              Do <strong>not</strong> build the pre-migration check on knex's lifecycle hooks. knex
+              calls <code>beforeAll</code> only when there are pending migrations, so a deploy with
+              nothing to run would skip the check entirely.
+            </p>
+          </div>
+        </section>
+
+        <!-- ======================== DATABASE SUPPORT ===================== -->
+        <section class="section" id="database-support">
+          <h2>
+            Database support<a
+              class="anchor"
+              href="#database-support"
+              aria-label="Link to Database support"
+              >#</a
+            >
+          </h2>
+
+          <div class="cards">
+            <div class="card">
+              <h3>Dialect-independent</h3>
+              <p>
+                The checksum and ledger checks — <code>D2</code>, <code>D3</code>, <code>D4</code>,
+                <code>D5</code> and <code>UNVERIFIED</code> — work on any dialect.
+              </p>
+            </div>
+            <div class="card">
+              <h3>Needs a catalog query</h3>
+              <p>
+                <code>D7</code> lists user tables, and supports PostgreSQL, Redshift, MySQL/MariaDB,
+                SQLite, MSSQL and Oracle. On an unrecognised dialect, <code>D7</code> is skipped
+                rather than guessed.
+              </p>
+            </div>
+          </div>
+
+          <p>
+            The automated test suite runs against SQLite via <code>better-sqlite3</code>.
+          </p>
+        </section>
+
+        <!-- =========================== ROADMAP =========================== -->
+        <section class="section" id="roadmap">
+          <h2>
+            Not implemented yet<a
+              class="anchor"
+              href="#roadmap"
+              aria-label="Link to Not implemented yet"
+              >#</a
+            >
+          </h2>
+
+          <p class="lead">
+            This release covers migration files against the ledger. It does <strong>not</strong> yet
+            compare either of them against the live database schema.
+          </p>
+
+          <p>The following are planned:</p>
+
+          <ul class="roadmap">
+            <li>
+              A catalog reader and a committed <code>expected.schema.json</code>, produced by
+              replaying every migration onto a scratch database in CI
+            </li>
+            <li>
+              Phantom object detection — tables, columns and indexes present in the database that no
+              migration created
+            </li>
+            <li>
+              <code>drift-ignore.yml</code>, with <code>adopt</code> / <code>revert</code> /
+              <code>ignore</code> / <code>quarantine</code> classes
+            </li>
+            <li>A <code>baseline</code> command for adopting a database that has already drifted</li>
+            <li>
+              Custom <code>migrationSource</code> support; the tool currently reads the migrations
+              directory itself
+            </li>
+          </ul>
+        </section>
+      </main>
+    </div>
+
+    <footer class="footer">
+      <div class="footer__inner">
+        <span>MIT License</span>
+        <nav class="footer__links" aria-label="Project links">
+          <a href="https://github.com/FeezyHendrix/knex-drift">Repository</a>
+          <a href="https://github.com/FeezyHendrix/knex-drift/issues">Issues</a>
+        </nav>
+      </div>
+    </footer>
+
+    <p class="visually-hidden" id="a11y-status" role="status" aria-live="polite"></p>
+
+    <script>
+      (function () {
+        "use strict";
+
+        var root = document.documentElement;
+        var status = document.getElementById("a11y-status");
+
+        function announce(message) {
+          if (status) status.textContent = message;
+        }
+
+        /* ---------------------------------------------------------------
+           Theme — prefers-color-scheme by default, manual override wins,
+           choice persists in localStorage.
+           --------------------------------------------------------------- */
+
+        var STORAGE_KEY = "knex-drift-theme";
+        var themeBtn = document.getElementById("theme-toggle");
+        var darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+        function effectiveTheme() {
+          var explicit = root.getAttribute("data-theme");
+          if (explicit === "light" || explicit === "dark") return explicit;
+          return darkQuery.matches ? "dark" : "light";
+        }
+
+        function syncThemeButton() {
+          if (!themeBtn) return;
+          var current = effectiveTheme();
+          themeBtn.setAttribute("data-theme", current);
+          themeBtn.setAttribute(
+            "aria-label",
+            current === "dark" ? "Switch to light theme" : "Switch to dark theme"
+          );
+        }
+
+        if (themeBtn) {
+          themeBtn.addEventListener("click", function () {
+            var next = effectiveTheme() === "dark" ? "light" : "dark";
+            root.setAttribute("data-theme", next);
+            try {
+              window.localStorage.setItem(STORAGE_KEY, next);
+            } catch (err) {
+              /* storage blocked — theme still applies for this session */
+            }
+            syncThemeButton();
+            announce(next === "dark" ? "Dark theme enabled" : "Light theme enabled");
+          });
+        }
+
+        /* Follow the system only while no explicit choice is stored. */
+        var onSchemeChange = function () {
+          if (!root.hasAttribute("data-theme")) syncThemeButton();
+        };
+        if (typeof darkQuery.addEventListener === "function") {
+          darkQuery.addEventListener("change", onSchemeChange);
+        } else if (typeof darkQuery.addListener === "function") {
+          darkQuery.addListener(onSchemeChange);
+        }
+
+        syncThemeButton();
+
+        /* ---------------------------------------------------------------
+           Copy buttons — injected, so a non-functional button never renders.
+           Copies code.textContent, so highlight spans never reach the
+           clipboard.
+           --------------------------------------------------------------- */
+
+        var COPY_ICON =
+          '<svg class="icon-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg>';
+        var CHECK_ICON =
+          '<svg class="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>';
+
+        function writeClipboard(text) {
+          if (navigator.clipboard && window.isSecureContext) {
+            return navigator.clipboard.writeText(text);
+          }
+          return new Promise(function (resolve, reject) {
+            var area = document.createElement("textarea");
+            area.value = text;
+            area.setAttribute("readonly", "");
+            area.style.position = "fixed";
+            area.style.top = "-1000px";
+            document.body.appendChild(area);
+            area.select();
+            var ok = false;
+            try {
+              ok = document.execCommand("copy");
+            } catch (err) {
+              ok = false;
+            }
+            document.body.removeChild(area);
+            ok ? resolve() : reject(new Error("copy-unavailable"));
+          });
+        }
+
+        Array.prototype.forEach.call(
+          document.querySelectorAll("figure.code"),
+          function (figure, index) {
+            var code = figure.querySelector("pre code");
+            var head = figure.querySelector(".code__head");
+            if (!code || !head) return;
+
+            var label = figure.getAttribute("data-copy-label") || "this code block";
+            var btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "copy-btn";
+            btn.setAttribute("aria-label", "Copy " + label + " to clipboard");
+            btn.innerHTML = COPY_ICON + CHECK_ICON;
+            head.appendChild(btn);
+
+            var resetTimer = null;
+            btn.addEventListener("click", function () {
+              writeClipboard(code.textContent).then(
+                function () {
+                  btn.setAttribute("data-copied", "true");
+                  announce("Copied " + label + " to clipboard");
+                  window.clearTimeout(resetTimer);
+                  resetTimer = window.setTimeout(function () {
+                    btn.removeAttribute("data-copied");
+                  }, 1600);
+                },
+                function () {
+                  announce("Copying is not available in this browser");
+                }
+              );
+            });
+
+            void index;
+          }
+        );
+
+        /* ---------------------------------------------------------------
+           Mobile disclosure nav — one nav node, never duplicated.
+           --------------------------------------------------------------- */
+
+        var navToggle = document.getElementById("nav-toggle");
+        var siteNav = document.getElementById("site-nav");
+
+        function setNavOpen(open) {
+          if (!navToggle || !siteNav) return;
+          navToggle.setAttribute("aria-expanded", open ? "true" : "false");
+          navToggle.setAttribute("aria-label", open ? "Close section menu" : "Open section menu");
+          if (open) siteNav.setAttribute("data-open", "true");
+          else siteNav.removeAttribute("data-open");
+        }
+
+        if (navToggle && siteNav) {
+          navToggle.addEventListener("click", function () {
+            setNavOpen(navToggle.getAttribute("aria-expanded") !== "true");
+          });
+
+          siteNav.addEventListener("click", function (event) {
+            if (event.target.closest("a")) setNavOpen(false);
+          });
+
+          document.addEventListener("keydown", function (event) {
+            if (event.key !== "Escape") return;
+            if (navToggle.getAttribute("aria-expanded") !== "true") return;
+            setNavOpen(false);
+            navToggle.focus();
+          });
+
+          document.addEventListener("click", function (event) {
+            if (navToggle.getAttribute("aria-expanded") !== "true") return;
+            if (siteNav.contains(event.target) || navToggle.contains(event.target)) return;
+            setNavOpen(false);
+          });
+
+          window.addEventListener("resize", function () {
+            if (window.innerWidth >= 960) setNavOpen(false);
+          });
+        }
+
+        /* ---------------------------------------------------------------
+           Scroll spy — marks the topmost visible section aria-current.
+           --------------------------------------------------------------- */
+
+        var links = Array.prototype.slice.call(document.querySelectorAll(".sidebar__link"));
+        var sections = links
+          .map(function (link) {
+            return document.querySelector(link.getAttribute("href"));
+          })
+          .filter(Boolean);
+
+        function setActive(id) {
+          links.forEach(function (link) {
+            if (link.getAttribute("href") === "#" + id) link.setAttribute("aria-current", "true");
+            else link.removeAttribute("aria-current");
+          });
+        }
+
+        if (sections.length && "IntersectionObserver" in window) {
+          var order = sections.map(function (section) {
+            return section.id;
+          });
+          var visible = Object.create(null);
+
+          var observer = new IntersectionObserver(
+            function (entries) {
+              entries.forEach(function (entry) {
+                if (entry.isIntersecting) visible[entry.target.id] = true;
+                else delete visible[entry.target.id];
+              });
+              for (var i = 0; i < order.length; i += 1) {
+                if (visible[order[i]]) {
+                  setActive(order[i]);
+                  return;
+                }
+              }
+            },
+            { rootMargin: "-72px 0px -55% 0px", threshold: 0 }
+          );
+
+          sections.forEach(function (section) {
+            observer.observe(section);
+          });
+
+          /* The last section can be too short to enter the band. */
+          window.addEventListener(
+            "scroll",
+            function () {
+              var atBottom =
+                window.innerHeight + window.scrollY >= document.body.offsetHeight - 4;
+              if (atBottom) setActive(order[order.length - 1]);
+            },
+            { passive: true }
+          );
+
+          links.forEach(function (link) {
+            link.addEventListener("click", function () {
+              setActive(link.getAttribute("href").slice(1));
+            });
+          });
+        }
+      })();
+    </script>
+  </body>
+</html>
