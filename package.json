@@ -30,11 +30,12 @@
   ],
   "scripts": {
     "build": "tsc",
-    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json",
+    "typecheck": "tsc --noEmit",
+    "typecheck:test": "tsc -p tsconfig.test.json",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "test": "pnpm run build && node --test \"test/*.test.ts\"",
-    "check": "pnpm run lint && pnpm run typecheck && pnpm run test"
+    "check": "pnpm run lint && pnpm run typecheck && pnpm run build && pnpm run typecheck:test && node --test \"test/*.test.ts\""
   },
   "keywords": [
     "knex",
