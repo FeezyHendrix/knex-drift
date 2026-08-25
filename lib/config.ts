@@ -80,7 +80,7 @@ function selectEnvironment(loaded: unknown, environment: string): unknown {
  * a plain project needs no configuration at all.
  */
 export async function loadConfig(
-  configPath: string | undefined,
+  configPath?: string,
   cwd: string = process.cwd(),
 ): Promise<ResolvedConfig> {
   const driftPath = path.resolve(cwd, configPath ?? "drift.config.js")

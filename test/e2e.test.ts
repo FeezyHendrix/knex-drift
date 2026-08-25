@@ -5,7 +5,7 @@ import path from "node:path"
 import { describe, it } from "node:test"
 import type { Knex } from "knex"
 import knexFactory from "knex"
-import { loadConfig } from "../dist/config.js"
+import { DriftConfigError, loadConfig } from "../dist/config.js"
 import { exitCodeFor } from "../dist/report.js"
 import type { Finding } from "../dist/types.js"
 import { record, verify } from "../dist/verify.js"
@@ -86,6 +86,17 @@ async function recordAll(project: Project): Promise<number> {
 function codes(findings: readonly Finding[]): readonly string[] {
   return findings.map((finding) => finding.code)
 }
+
+describe("the published API surface", () => {
+  it("accepts loadConfig() with no arguments, as the README documents", async () => {
+    // Given: no config path and no cwd - the zero-config call from the README.
+    // When: it runs from a directory with no knexfile
+    // Then: it fails with a typed error, not a missing-argument error.
+    // This also locks the signature: a required first parameter breaks the
+    // type check of this file, which is how the README example broke before.
+    await assert.rejects(() => loadConfig(), DriftConfigError)
+  })
+})
 
 describe("a normal deploy", () => {
   it("reports UNVERIFIED before checksums exist, then nothing after record", async () => {
