@@ -1,0 +1,3 @@
+# better-sqlite3 v13 ships a prebuilt binary, so its install script is not needed.
+allowBuilds:
+  better-sqlite3: false

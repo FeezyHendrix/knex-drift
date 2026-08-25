@@ -1,0 +1,65 @@
+{
+  "name": "knex-drift",
+  "version": "0.1.0",
+  "description": "Catch the knex migration problems knex cannot see: files edited after they were applied, out-of-order inserts, duplicate ledger rows, and empty ledgers on live databases.",
+  "type": "module",
+  "license": "MIT",
+  "author": "FeezyHendrix",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FeezyHendrix/knex-drift.git"
+  },
+  "homepage": "https://github.com/FeezyHendrix/knex-drift#readme",
+  "bugs": {
+    "url": "https://github.com/FeezyHendrix/knex-drift/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "bin": {
+    "knex-drift": "./dist/cli.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.test.json",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "test": "pnpm run build && node --test \"test/*.test.ts\"",
+    "check": "pnpm run lint && pnpm run typecheck && pnpm run test"
+  },
+  "keywords": [
+    "knex",
+    "migration",
+    "migrations",
+    "schema",
+    "drift",
+    "checksum",
+    "database",
+    "sql",
+    "devops",
+    "ci"
+  ],
+  "peerDependencies": {
+    "knex": ">=2.0.0"
+  },
+  "dependencies": {
+    "commander": "^14.0.1",
+    "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.2.2",
+    "@types/node": "^22.15.3",
+    "better-sqlite3": "^13.0.3",
+    "knex": "^3.1.0",
+    "typescript": "^5.9.2"
+  }
+}
