@@ -61,6 +61,9 @@
     "@types/node": "^22.15.3",
     "better-sqlite3": "^13.0.3",
     "knex": "^3.1.0",
+    "mysql2": "^3.24.2",
+    "pg": "^8.23.0",
+    "tedious": "^20.0.0",
     "typescript": "^5.9.2"
   }
 }
