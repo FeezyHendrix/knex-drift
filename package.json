@@ -29,7 +29,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "node api.js && tsc",
+    "build": "tsc",
     "typecheck": "tsc --noEmit",
     "typecheck:test": "tsc -p tsconfig.test.json",
     "lint": "biome check .",
